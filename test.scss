@@ -7,7 +7,8 @@
 
 // TEST: captures complex selectors
 #hello-there.text-height {
-  .something {
+  // TEST: spaces between selectors retained
+  .something .going .on, .nothing .going.on {
     width: 1px;
     height: 1px;
     border: {
@@ -32,8 +33,8 @@
   // comment should not be included
   // .very-bad-indeedj { .terribleq {
   // .this-could-be-worser { .darry-dad-dindeeds {
-  //   
-  // TEST: multiple unbalancedcomments in brackets
+  //
+  // TEST: multiple unbalanced comments in brackets
   // .hello  {{{}{{{{{{}{{}}}}}}}}}}}}}}}}}
   // .dello  {{{{{{{{{{{{{{
  .things-#{$could}-be-#{$arc} {
@@ -45,7 +46,7 @@
   .this-could-be-bad { .very-bad-indeed {
 
    */
-  // TEST: rule before should not be included as 
+  // TEST: rule before should not be included as
   // part of selector
     width: 12px;
       .therefore {

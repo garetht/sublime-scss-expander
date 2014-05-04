@@ -6,9 +6,12 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
     self.selectors = []
 
     curpos = self.view.sel()[0].begin()
-    self.state_machine(curpos)
+    self.selector_machine(curpos)
+    selector_array = map(self.process_selector, self.selectors)[::-1]
+    self.generate_expanded(selector_array)
+    print self.selectors
 
-  def state_machine(self, cursorpos):
+  def selector_machine(self, cursorpos):
     position = self.push_next_selector(cursorpos)
     while position >= 0:
       position = self.push_next_selector(position)
@@ -72,8 +75,8 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
       char = self.view.substr(selectorposition)
 
     if len(selector) > 0:
+      selector = self.strip_whitespace(selector)
       self.selectors.append(selector[::-1])
-      print self.selectors
 
   # Returns whether the line is a comment and
   # the number of the first character of the comment ('/')
@@ -82,6 +85,7 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
   def check_comment(self, selectorposition):
     savedpos = selectorposition
     char = self.view.substr(selectorposition)
+
     while char != '\n' and selectorposition >= 0:
       if char == '/' and self.lookahead(selectorposition) == '/':
         return [True, selectorposition - 1]
@@ -89,3 +93,25 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
       char = self.view.substr(selectorposition)
 
     return [False, savedpos]
+
+  def parse_at_root(self, selector):
+    pass
+
+  def process_selector(self, selector):
+    return selector.split(',')
+
+  # selector array goes forward
+  # TODO: deal with case of directive
+  def generate_expanded(self, selector_array):
+
+    def comma_reducer(array, following_array):
+      results = []
+      for selector in array:
+        for sel in following_array:
+          results.append(selector + ' ' + sel)
+      return results
+
+    self.selectors = reduce(comma_reducer, selector_array)
+
+  def strip_whitespace(self, selector):
+    return re.sub(r'(^\s+|\s+$)', '', selector)
