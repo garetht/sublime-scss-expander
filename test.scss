@@ -1,0 +1,61 @@
+// TEST: Other root should not be included
+.another {
+  .one-width {
+    outline: none;
+  }
+}
+
+// TEST: captures complex selectors
+#hello-there.text-height {
+  .something {
+    width: 1px;
+    height: 1px;
+    border: {
+      top: 1px;
+      left: 2px;
+    }
+
+    .aways {
+      text-align: bottom;
+      position: absolute;
+    }
+
+  @for $thing in (one two) {
+    // TEST: interpolation. Must also correctly generate
+    // selector.
+    .test-#{$thing}-bling {
+      width: 20px;
+    }
+  }
+
+  // TEST: Incomplete rule head in single-line
+  // comment should not be included
+  // .very-bad-indeedj { .terribleq {
+  // .this-could-be-worser { .darry-dad-dindeeds {
+  //   
+  // TEST: multiple unbalancedcomments in brackets
+  // .hello  {{{}{{{{{{}{{}}}}}}}}}}}}}}}}}
+  // .dello  {{{{{{{{{{{{{{
+ .things-#{$could}-be-#{$arc} {
+
+
+  /*
+  TEST: Incomplete rule head in block comment
+  should not be included
+  .this-could-be-bad { .very-bad-indeed {
+
+   */
+  // TEST: rule before should not be included as 
+  // part of selector
+    width: 12px;
+      .therefore {
+        .impossibilities {
+
+        }
+      }
+    }
+  }
+}
+
+// .one { .two { .three { .four{}}}}
+

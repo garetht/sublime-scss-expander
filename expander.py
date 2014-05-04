@@ -1,4 +1,5 @@
 import sublime, sublime_plugin
+import re
 
 class SassexpanderCommand(sublime_plugin.TextCommand):
   def run(self, edit):
@@ -26,12 +27,17 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
         if char == '/' and self.lookahead(startpos) == '*':
           comment_state = True
         elif char == '{':
-          bracket_counter -= 1
+          is_comment, startpos = self.check_comment(startpos)
+          if not is_comment:
+            bracket_counter -= 1
         elif char == '}':
-          bracket_counter += 1
+          is_comment, startpos = self.check_comment(startpos)
+          if not is_comment:
+            bracket_counter += 1
       startpos -= 1
 
-    if bracket_counter < 0 and not comment_state:
+    # handle the case of interpolation
+    if (bracket_counter < 0 and self.view.substr(startpos) != '#') and not comment_state:
       self.gather_selector(startpos)
 
     return startpos
@@ -44,10 +50,42 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
     selectorposition = openposition - 1
     char = self.view.substr(selectorposition)
 
-    while char != ';' and char != '}' and char != '{' and char != '/' and selectorposition >= 0:
+    while char != ';' and char != '{' and char != '\n' and (char != '/' and self.lookahead(selectorposition) != '*') and selectorposition >= 0:
+
+      if char == '}':
+        stringbuffer = '}'
+        selectorposition -= 1
+
+        while char != '{' and selectorposition >= 0:
+          char = self.view.substr(selectorposition)
+          stringbuffer += char
+          selectorposition -= 1
+
+        if char == '{' and self.view.substr(selectorposition) == '#':
+          selector += stringbuffer
+          char = self.view.substr(selectorposition)
+        else:
+          break
+
       selector += char
       selectorposition -= 1
       char = self.view.substr(selectorposition)
 
-    self.selectors.append(selector[::-1])
-    print self.selectors
+    if len(selector) > 0:
+      self.selectors.append(selector[::-1])
+      print self.selectors
+
+  # Returns whether the line is a comment and
+  # the number of the first character of the comment ('/')
+  # [True, 32]
+  # If it is not a commented line, return the same selectorpos
+  def check_comment(self, selectorposition):
+    savedpos = selectorposition
+    char = self.view.substr(selectorposition)
+    while char != '\n' and selectorposition >= 0:
+      if char == '/' and self.lookahead(selectorposition) == '/':
+        return [True, selectorposition - 1]
+      selectorposition -= 1
+      char = self.view.substr(selectorposition)
+
+    return [False, savedpos]
