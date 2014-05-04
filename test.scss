@@ -5,6 +5,80 @@
   }
 }
 
+// TEST: media queries and at-root
+
+@media screen {
+  @supports something {
+    .hello {
+      @at-root (without: all) .rule-name {
+        margin: 0px;
+      }
+    }
+  }
+}
+
+@media screen {
+  @supports something {
+    .hello {
+      @at-root (with: rule) .rule-name {
+        margin: 0px;
+      }
+    }
+  }
+}
+
+@media screen {
+  @supports something {
+    .hello {
+      @at-root (with: supports) .rule-name {
+        margin: 0px;
+      }
+    }
+  }
+}
+
+@media screen {
+  @supports something {
+    .hello {
+      @at-root (without: supports) .rule-name {
+        margin: 0px;
+      }
+    }
+  }
+}
+
+@media screen {
+  @supports something {
+    .hello {
+      @at-root (without: rule) .rule-name {
+        margin: 0px;
+      }
+    }
+  }
+}
+
+@media screen {
+  @supports something {
+    .hello {
+      @at-root .rule-name {
+        margin: 0px;
+      }
+    }
+  }
+}
+
+@media screen {
+  @supports something {
+    .hello {
+      @at-root{
+        .rule {
+          margin: 0px;
+        }
+      }
+    }
+  }
+}
+
 // TEST: captures complex selectors
 #hello-there.text-height {
   // TEST: spaces between selectors retained
@@ -59,4 +133,22 @@
 }
 
 // .one { .two { .three { .four{}}}}
+
+
+@media only print, only screen and (max-device-width: 480px) {
+  .hello {
+    width: 200px;
+  }
+}
+
+
+// TEST: parent selector replacement
+.hello, .there{
+
+  .one, .two{
+    &:hover{
+      width: 20px;
+    }
+  }
+}
 
