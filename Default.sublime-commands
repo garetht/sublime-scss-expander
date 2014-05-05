@@ -1,6 +1,6 @@
 [
 	{
-    "caption": "SASS Expander: SCSS Syntax",
-    "command": "sassexpander"
+    "caption": "SCSS Expander: Expand Cursor Scope",
+    "command": "scssexpander"
   }
 ]

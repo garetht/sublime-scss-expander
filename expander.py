@@ -1,26 +1,31 @@
 import sublime, sublime_plugin
 import re
 
-class SassexpanderCommand(sublime_plugin.TextCommand):
+class ScssexpanderCommand(sublime_plugin.TextCommand):
   def run(self, edit):
-    self.selectors = []
-
     curpos = self.view.sel()[0].begin()
-    self.selector_machine(curpos)
+    expander = SCSSExpand(self.view.substr, curpos)
+    status = expander.coalesce_rule()
+    sublime.message_dialog(status)
+
+class SCSSExpand():
+  def __init__(self, get_char_fn, startpos):
+    self.selectors = []
+    self.get_char_fn = get_char_fn
+    self.startpos = startpos
+
+  def coalesce_rule(self):
+    self.selector_machine(self.startpos)
     self.process_at_root()
 
     selector_array = filter(lambda x : not re.search('@(for|each|while|if)', x), self.selectors)
     selector_array = map(self.process_selector, selector_array)
+
     ### Past this point are mostly differences in formatting
     # If loop directive information must be retained,
     # modify the filter above
-
-    # generate_expanded takes an array of arrays and joins them together
-    # e.g. [['.hello', '.there'], ['.one', '.two']]
-    # gives ['.hello .one', '.hello .two', '.there .one', '.there .two']
     self.generate_expanded(selector_array)
-    status = self.strip_whitespace(', '.join(self.selectors))
-    sublime.message_dialog(status)
+    return self.strip_whitespace(', '.join(self.selectors))
 
   def selector_machine(self, cursorpos):
     position = self.push_next_selector(cursorpos)
@@ -33,7 +38,7 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
     comment_state = False
 
     while bracket_counter > -1 and startpos >= 0:
-      char = self.view.substr(startpos)
+      char = self.get_char_fn(startpos)
 
       if comment_state:
         if char == '*' and self.lookahead(startpos) == '/':
@@ -52,18 +57,18 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
       startpos -= 1
 
     # handle the case of interpolation
-    if (bracket_counter < 0 and self.view.substr(startpos) != '#') and not comment_state:
+    if (bracket_counter < 0 and self.get_char_fn(startpos) != '#') and not comment_state:
       self.gather_selector(startpos)
 
     return startpos
 
   def lookahead(self, pos):
-    return self.view.substr(pos - 1)
+    return self.get_char_fn(pos - 1)
 
   def gather_selector(self, openposition):
     selector = ''
     selectorposition = openposition
-    char = self.view.substr(selectorposition)
+    char = self.get_char_fn(selectorposition)
 
     while char != ';' and char != '{' and char != '\n' and (char != '/' and self.lookahead(selectorposition) != '*') and selectorposition >= 0:
 
@@ -72,19 +77,19 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
         selectorposition -= 1
 
         while char != '{' and selectorposition >= 0:
-          char = self.view.substr(selectorposition)
+          char = self.get_char_fn(selectorposition)
           stringbuffer += char
           selectorposition -= 1
 
-        if char == '{' and self.view.substr(selectorposition) == '#':
+        if char == '{' and self.get_char_fn(selectorposition) == '#':
           selector += stringbuffer
-          char = self.view.substr(selectorposition)
+          char = self.get_char_fn(selectorposition)
         else:
           break
 
       selector += char
       selectorposition -= 1
-      char = self.view.substr(selectorposition)
+      char = self.get_char_fn(selectorposition)
 
     if len(selector) > 0:
       selector = self.strip_whitespace(selector)
@@ -96,13 +101,13 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
   # If it is not a commented line, return the same selectorpos
   def check_comment(self, selectorposition):
     savedpos = selectorposition
-    char = self.view.substr(selectorposition)
+    char = self.get_char_fn(selectorposition)
 
     while char != '\n' and selectorposition >= 0:
       if char == '/' and self.lookahead(selectorposition) == '/':
         return [True, selectorposition - 1]
       selectorposition -= 1
-      char = self.view.substr(selectorposition)
+      char = self.get_char_fn(selectorposition)
 
     return [False, savedpos]
 
@@ -155,6 +160,9 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
     return split
 
   # selector array goes forward
+  # generate_expanded takes an array of arrays and joins them together
+  # e.g. [['.hello', '.there'], ['.one', '.two']]
+  # gives ['.hello .one', '.hello .two', '.there .one', '.there .two']
   def generate_expanded(self, selector_array):
 
     def comma_reducer(array, following_array):
@@ -171,3 +179,10 @@ class SassexpanderCommand(sublime_plugin.TextCommand):
 
   def strip_whitespace(self, selector):
     return re.sub(r'(^\s+|\s+$)', '', selector)
+
+class StringSCSSExpand(SCSSExpand):
+  def __init__(self, text, startpos):
+    self.text = text
+    get_char_fn = lambda index : self.text[index]
+    super(StringSCSSExpand, self).__init__(get_char_fn)
+
