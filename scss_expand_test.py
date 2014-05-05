@@ -248,7 +248,7 @@ body#hello-world.program.rule:before {
     """
     sse = string_scss_expand.StringSCSSExpand(48, string)
     actual_rule = sse.coalesce_rule()
-    expected_rule = None
+    expected_rule = ".baz"
 
     self.assertEqual(actual_rule, expected_rule)
 

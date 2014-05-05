@@ -109,6 +109,7 @@ class SCSSExpand():
   # Returns False if the startpos is not in a block comment,
   # returns True if it is
   def check_block_comment(self, selectorposition):
+    savedpos = selectorposition
     char = self.get_char_fn(selectorposition)
     seen_closer = False
     while selectorposition >= 0:
@@ -116,12 +117,15 @@ class SCSSExpand():
         seen_closer = True
       elif char == '*' and self.lookahead(selectorposition) == '/':
         if seen_closer:
-          return False
+          self.startpos = savedpos
+          return
         else:
-          return True
+          self.startpos = selectorposition - 2
+          return
       selectorposition -= 1
       char = self.get_char_fn(selectorposition)
-    return False
+    self.startpos = savedpos
+    return
 
   def process_at_root(self):
     selectors = self.selectors
