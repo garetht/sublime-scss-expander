@@ -302,5 +302,207 @@ body#hello-world.program.rule:before {
 
     self.assertEqual(actual_rule, expected_rule)
 
+  def test_handle_interpolation(self):
+    """Treats an interpolated variable as part of a selector."""
+    string = """
+$foo: 14;
+.bar-#{$foo}-type {
+  height: 12px;
+}
+    """
 
+    sse = string_scss_expand.StringSCSSExpand(38, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".bar-#{$foo}-type"
 
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_handle_multiple_interpolation(self):
+    """Treats multiple interpolated variables as part of a selector."""
+    string = """
+$foo: 14;
+$bim: 22;
+.baz {
+  .bar-#{$foo}-type-#{$bim} {
+    height: 12px;
+  }
+}
+
+    """
+
+    sse = string_scss_expand.StringSCSSExpand(67, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".baz .bar-#{$foo}-type-#{$bim}"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_ignore_loops(self):
+    """Does not list loops as part of output."""
+    string = """
+.bim {
+  @for $thing in (foo bar) {
+    .test-#{$thing}-bling {
+      width: 20px;
+    }
+  }
+}
+
+    """
+    sse = string_scss_expand.StringSCSSExpand(63, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".bim .test-#{$thing}-bling"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_include_other_directives(self):
+    """Includes directives such as @media."""
+    string = """
+@media only print, only screen and (max-device-width: 480px) {
+  .foo {
+    width: 200px;
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(80, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = "@media only print, only screen and (max-device-width: 480px) .foo"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_at_root(self):
+    """Supports the @at-root directive without any arguments."""
+    string = """
+@media screen {
+  @supports something {
+    .foo {
+      @at-root .bar {
+        top: 0;
+      }
+    }
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(84, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = "@media screen @supports something .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_at_root_without_all(self):
+    """Supports the @at-root directive while excluding all directives and rules."""
+    string = """
+@media screen {
+  @supports something {
+    .foo {
+      @at-root(without: all) .bar {
+        top: 0;
+      }
+    }
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(95, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_at_root_with_rule(self):
+    """Supports the @at-root directive while including all rules."""
+    string = """
+@media screen {
+  @supports something {
+    .foo {
+      @at-root(with: rule) .bar {
+        top: 0;
+      }
+    }
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(95, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".foo .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_at_root_with(self):
+    """Supports the @at-root directive while including some rules."""
+    string = """
+@media screen {
+  @supports something {
+    .foo {
+      @at-root(with: supports) .bar {
+        top: 0;
+      }
+    }
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(100, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = "@supports something .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_at_root_without(self):
+    """Supports the @at-root directive while excluding some rules."""
+    string = """
+@media screen {
+  @supports something {
+    .foo {
+      @at-root(without: media) .bar {
+        top: 0;
+      }
+    }
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(104, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = "@supports something .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_at_root_without_rule(self):
+    """Supports the @at-root directive while excluding all rules, the same as with no arguments."""
+    string = """
+@media screen {
+  @supports something {
+    .foo {
+      @at-root(without: rule) .bar {
+        top: 0;
+      }
+    }
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(104, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = "@media screen @supports something .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_at_root_block(self):
+    """Supports the @at-root directive as a block."""
+    string = """
+@media screen {
+  @supports something {
+    .foo {
+      @at-root {
+        .bar {
+          top: 0;
+        }
+        .baz {
+          bottom: 0;
+        }
+      }
+    }
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(138, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = "@media screen @supports something .baz"
+
+    self.assertEqual(actual_rule, expected_rule)
