@@ -8,6 +8,8 @@ class SCSSExpand():
     self.startpos = startpos
 
   def coalesce_rule(self):
+    if self.check_block_comment(self.startpos):
+      return
     self.selector_machine(self.startpos)
     self.process_at_root()
 
@@ -103,6 +105,23 @@ class SCSSExpand():
       char = self.get_char_fn(selectorposition)
 
     return [False, savedpos]
+
+  # Returns False if the startpos is not in a block comment,
+  # returns True if it is
+  def check_block_comment(self, selectorposition):
+    char = self.get_char_fn(selectorposition)
+    seen_closer = False
+    while selectorposition >= 0:
+      if char == '/' and self.lookahead(selectorposition):
+        seen_closer = True
+      elif char == '*' and self.lookahead(selectorposition) == '/':
+        if seen_closer:
+          return False
+        else:
+          return True
+      selectorposition -= 1
+      char = self.get_char_fn(selectorposition)
+    return False
 
   def process_at_root(self):
     selectors = self.selectors

@@ -235,6 +235,23 @@ body#hello-world.program.rule:before {
 
     self.assertEqual(actual_rule, expected_rule)
 
+  def test_handle_block_comment_start(self):
+    """Does not return anything if the cursor starts at the comment."""
+    string = """
+.baz {
+  height: 10px;
+  /* .foo, .bar {
+    width: 14px;
+  }
+  */
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(48, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = None
+
+    self.assertEqual(actual_rule, expected_rule)
+
   def test_handle_single_line_comment(self):
     """Does not include rules in single-line comments"""
     string = """

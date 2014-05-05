@@ -28,7 +28,7 @@ It's possible to look at the generated CSS, of course, if the generated styleshe
 ## Support
 It supports most sane uses of SCSS, including SASS 3.3's **@at-root** with all possible arguments, various permutations of the **parent selector** as well as combinatorically combined comma-separated rules.
 
-Because it is **not a parser**, it works only when you give it correct code. It does not currently support content-blocks that masquerade as rules. It will also be slightly confused (for now) if you start in the middle of a comment block. It does not even attempt to peek inside any imports.
+Because it is **not a parser**, it works only when you give it correct code. It does not expand content-blocks that masquerade as rules. It does not even attempt to peek inside any imports.
 
 ## Tests
 There's a mound of tests which hopefully give good coverage. These are located in `scss_expand_test.py`. This does not test Sublime Text directly; instead, the expander can and has been generalized to work with any piece of text given a starting position within that text and a function that, given an index, returns the character at that position within the text. This means that the main Python class, `SCSSExpander`, can be exported for use with other projects.
