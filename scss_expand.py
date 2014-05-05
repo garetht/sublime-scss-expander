@@ -10,7 +10,7 @@ class SCSSExpand():
     self.selector_machine(self.startpos)
     self.process_at_root()
 
-    selector_array = filter(lambda x : not re.search('@(for|each|while|if)', x), self.selectors)
+    selector_array = filter(lambda x : not re.search('@(for|each|while|if|else)', x), self.selectors)
     selector_array = map(self.process_selector, selector_array)
 
     ### Past this point are mostly differences in formatting
@@ -161,10 +161,11 @@ class SCSSExpand():
       results = []
       for selector in array:
         for sel in following_array:
+          stripped_selector = self.strip_whitespace(selector)
           if re.search('&', sel):
-            results.append(sel.replace('&', selector))
+            results.append(sel.replace('&', stripped_selector))
           else:
-            results.append(self.strip_whitespace(selector) + ' ' + self.strip_whitespace(sel))
+            results.append(stripped_selector + ' ' + self.strip_whitespace(sel))
       return results
 
     self.selectors = reduce(comma_reducer, selector_array)
