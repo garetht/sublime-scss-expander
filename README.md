@@ -23,7 +23,7 @@ It's possible to look at the generated CSS, of course, if the generated styleshe
 (because Sublime Text's alert window has remarkably little space.)
 
 ## Installation and Usage
-`sublime-scss-expander` helps you do that: position the cursor in the scope of the rule you want to know about, and press **command-E** by default to show the rule that is in scope at that position. It is also be available in the command palette as **SCSS Expander: Expand Cursor Scope**.
+`sublime-scss-expander` helps you do that: position the cursor in the scope of the rule you want to know about, and press **command-E** by default to show the rule that is in scope at that position. It is also available in the command palette as **SCSS Expander: Expand Cursor Scope**.
 
 ## Support
 It supports most sane uses of SCSS, including SASS 3.3's **@at-root** with all possible arguments, various permutations of the **parent selector** as well as combinatorically combined comma-separated rules.
