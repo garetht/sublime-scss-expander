@@ -164,7 +164,7 @@ class SCSSExpand():
           if re.search('&', sel):
             results.append(sel.replace('&', selector))
           else:
-            results.append(selector + ' ' + sel)
+            results.append(self.strip_whitespace(selector) + ' ' + self.strip_whitespace(sel))
       return results
 
     self.selectors = reduce(comma_reducer, selector_array)

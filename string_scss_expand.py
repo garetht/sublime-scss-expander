@@ -5,8 +5,3 @@ class StringSCSSExpand(scss_expand.SCSSExpand):
     self.text = text
     get_char_fn = lambda index : self.text[index]
     scss_expand.SCSSExpand.__init__(self, startpos, get_char_fn)
-
-string = ".hello{width: 123px}"
-
-sse = StringSCSSExpand(10, string)
-print sse.coalesce_rule()
