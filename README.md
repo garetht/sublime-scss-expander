@@ -7,14 +7,20 @@ Suppose you're working on a particularly long project written using the SCSS syn
 ```scss
 //... {
         .foo {
-          .bar {
+          > &.bar {
             // what CSS rule is being generated here?
           }
         }
 //... }
 ```
 
-It's possible to look at the generated CSS, of course, if the generated stylesheets are not too complex. But even that requires keeping another file open somewhere and hunting for line numbers. Most of the time you just want an answer straight away.
+It's possible to look at the generated CSS, of course, if the generated stylesheets are not too complex. But even that requires keeping another file open somewhere and hunting for line numbers. Most of the time you just want an answer straight away; here, you might get something like:
+```
+.bim
+.baz
+> .foo.bar
+```
+(because Sublime Text's alert window has remarkably little space.)
 
 ## Installation and Usage
 `sublime-scss-expander` helps you do that: position the cursor in the scope of the rule you want to know about, and press **command-E** by default to show the rule that is in scope at that position. It is also be available in the command palette as **SCSS Expander: Expand Cursor Scope**.

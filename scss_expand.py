@@ -1,8 +1,9 @@
 import re
 
 class SCSSExpand():
-  def __init__(self, startpos, get_char_fn):
+  def __init__(self, startpos, get_char_fn, separator = ' '):
     self.selectors = []
+    self.separator = separator
     self.get_char_fn = get_char_fn
     self.startpos = startpos
 
@@ -17,7 +18,7 @@ class SCSSExpand():
     # If loop directive information must be retained,
     # modify the filter above
     self.generate_expanded(selector_array)
-    return self.strip_whitespace(', '.join(self.selectors))
+    return self.strip_whitespace((',' + self.separator).join(self.selectors))
 
   def selector_machine(self, cursorpos):
     position = self.push_next_selector(cursorpos)
@@ -165,7 +166,7 @@ class SCSSExpand():
           if re.search('&', sel):
             results.append(sel.replace('&', stripped_selector))
           else:
-            results.append(stripped_selector + ' ' + self.strip_whitespace(sel))
+            results.append(stripped_selector + self.separator + self.strip_whitespace(sel))
       return results
 
     self.selectors = reduce(comma_reducer, selector_array)
