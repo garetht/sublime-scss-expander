@@ -286,6 +286,56 @@ body#hello-world.program.rule:before {
 
     self.assertEqual(actual_rule, expected_rule)
 
+  def test_handle_bracketless_single_line_comment_rule(self):
+    """Does not include single-line comments without brackets before rules."""
+    string = """
+// comment here
+.foo {
+  .bar { width: 20px; }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(33, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".foo .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_handle_spliced_single_line_comments(self):
+    """Does not include single-line comments without brackets before rules."""
+    string = """
+.baz,
+// comment here
+.foo {
+  .bar { width: 20px; }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(40, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".baz .bar, .baz .foo"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_handle_single_line_comment_single_line_with_interpolation(self):
+    """Does not include single-line comments before lines with interpolation."""
+    string = """
+// another comment here
+.foo {
+  .bar { width: #{$height} - 20px; }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(50, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".foo .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+    sse = string_scss_expand.StringSCSSExpand(62, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".foo .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+
   def test_handle_complex_single_line_comment(self):
     """Does not include rules in single-line comments"""
     string = """
