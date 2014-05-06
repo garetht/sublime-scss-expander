@@ -65,7 +65,7 @@ class SCSSExpand():
     selectorposition = openposition
     char = self.get_char_fn(selectorposition)
 
-    while char != ';' and char != '{' and char != '\n' and (char != '/' and self.lookahead(selectorposition) != '*') and selectorposition >= 0:
+    while char != ';' and char != '{' and (char != '/' and self.lookahead(selectorposition) != '*') and selectorposition >= 0:
 
       if char == '}':
         stringbuffer = '}'

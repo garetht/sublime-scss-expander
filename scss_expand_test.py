@@ -86,6 +86,22 @@ body#hello-world.program.rule:before {
 
     self.assertEqual(actual_rule, expected_rule)
 
+  def test_newline_comma_rules(self):
+    """Can handle comma-separated rules broken into multiple lines."""
+    string = """
+.foo,
+.bar {
+  .baz {
+    outline: none;
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(28, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".foo .baz, .bar .baz"
+
+    self.assertEqual(actual_rule, expected_rule)
+
   def test_top_comma_nested_rules(self):
     """Can handle a nested rule with two top-level rules."""
     string = """
