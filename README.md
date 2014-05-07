@@ -1,4 +1,4 @@
-Sublime SCSS Expander
+SCSS Expander
 =====================
 [![Build Status](https://travis-ci.org/garetht/sublime-scss-expander.svg?branch=master)](https://travis-ci.org/garetht/sublime-scss-expander)
 
@@ -7,18 +7,18 @@ Suppose you're working on a particularly long project written using the SCSS syn
 ```scss
 //... {
         .foo {
-          > &.bar {
+          + &.bar {
             // what CSS rule is being generated here?
           }
         }
 //... }
 ```
 
-It's possible to look at the generated CSS, of course, if the generated stylesheets are not too complex. But even that requires keeping another file open somewhere and hunting for line numbers. Most of the time you just want an answer straight away; here, you might get something like:
+It's possible to look at the generated CSS, of course, if the generated stylesheets are not too complex. But even that requires keeping another file open somewhere and hunting for line numbers. Most of the time you just want an answer straight away; here, you might get this answer:
 ```
 .bim
 .baz
-> .foo.bar
++ .foo.bar
 ```
 (because Sublime Text's alert window has remarkably little space.)
 

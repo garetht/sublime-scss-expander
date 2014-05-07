@@ -211,7 +211,7 @@ body#hello-world.program.rule:before {
 
     self.assertEqual(actual_rule, expected_rule)
 
-  def test_handle_block_comment(self):
+  def test_handle_block_comment_rules(self):
     """Does not include rules in commented blocks."""
     string = """
 .foo, .bar {
@@ -226,7 +226,7 @@ body#hello-world.program.rule:before {
    */
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(82, string)
+    sse = string_scss_expand.StringSCSSExpand(88, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
 
@@ -245,14 +245,14 @@ body#hello-world.program.rule:before {
    */
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(82, string)
+    sse = string_scss_expand.StringSCSSExpand(102, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
-
+    print sse.comment_blocks
     self.assertEqual(actual_rule, expected_rule)
 
   def test_handle_block_comment_start(self):
-    """Does not return anything if the cursor starts at the comment."""
+    """Searches outside the comment scope if the cursor starts at the comment."""
     string = """
 .baz {
   height: 10px;
@@ -280,7 +280,7 @@ body#hello-world.program.rule:before {
   // }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(82, string)
+    sse = string_scss_expand.StringSCSSExpand(77, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
 
@@ -311,7 +311,7 @@ body#hello-world.program.rule:before {
     """
     sse = string_scss_expand.StringSCSSExpand(40, string)
     actual_rule = sse.coalesce_rule()
-    expected_rule = ".baz .bar, .baz .foo"
+    expected_rule = ".baz .bar, .foo .bar"
 
     self.assertEqual(actual_rule, expected_rule)
 
@@ -566,6 +566,25 @@ $bim: 22;
 
     self.assertEqual(actual_rule, expected_rule)
 
+  def test_at_root_without_rule_and_other(self):
+    """Supports the @at-root directive while excluding rules and other directives at the same time."""
+    string = """
+@media screen {
+  @supports something {
+    .foo {
+      @at-root(without: rule media) .bar {
+        top: 0;
+      }
+    }
+  }
+}
+    """
+    sse = string_scss_expand.StringSCSSExpand(100, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = "@supports something .bar"
+
+    self.assertEqual(actual_rule, expected_rule)
+
   def test_at_root_block(self):
     """Supports the @at-root directive as a block."""
     string = """
@@ -589,3 +608,172 @@ $bim: 22;
     expected_rule = "@media screen @supports something .baz"
 
     self.assertEqual(actual_rule, expected_rule)
+
+  def test_comment_machine_single_simple(self):
+    """Test pure functionality of comment machine with a one-line comment"""
+    string = "//2345678\n"
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(9)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(0, 9)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_comment_machine_single_complex(self):
+    """Test comment machine when comment is within rules"""
+    string = """
+.foo {
+  width: 20px;
+}
+// This is a comment.
+.bar {
+  height: 20px;
+}
+    """
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(64)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(25, 46)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_comment_machine_single_nested(self):
+    """Test comment machine when comment has comment"""
+    string = """
+.foo {
+  width: 20px;
+}
+//// This is a comment.
+.bar {
+  height: 20px;
+}
+    """
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(64)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(25, 48)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_comment_machine_single_multiple(self):
+    """Test comment machine with multiple single line comments"""
+    string = """
+// Hello comment
+.foo {
+  width: 20px;
+}
+//// This is a comment.
+.bar {
+  height: 20px;
+}
+    """
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(80)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(1, 17), (42, 65)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_comment_machine_block_single_line(self):
+    """Test functionality of comment machine with a block comment"""
+    string = "/*/345678*/ "
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(11)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(0, 10)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_comment_machine_block_multiple_lines(self):
+    """Test functionality of comment machine with a block comment"""
+    string = """
+.foo {
+  height: 30px;
+}
+/*
+Things in here.
+ */
+.bar {
+  width: 20px;
+}
+    """
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(63)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(26, 47)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_comment_machine_nested_multi_comments(self):
+    """Test functionality of comment machine with single comments in block comments"""
+    string = """
+.foo {
+  height: 30px;
+}
+/*
+Things in here. // like this
+ */
+.bar {
+  width: 20px;
+}
+    """
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(80)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(26, 60)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_comment_machine_multi_block_starters(self):
+    """Test functionality of comment machine with multiple comment block starters"""
+    string = """
+.foo {
+  height: 30px;
+}
+/* /* /*
+/*
+Things in here. // like this
+ */
+.bar {
+  width: 20px;
+}
+    """
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(90)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(26, 69)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_comment_machine_mixed_comments(self):
+    """Test functionality of comment machine with multiple comment block starters"""
+    string = """
+.foo {
+  height: 30px;
+  // a thing here
+}
+/* /* /*
+/*
+Things in here. // like this
+ */
+.bar {
+  width: 20px;
+}
+/* thing there */
+// end
+    """
+
+    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse.comment_machine(138)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(26, 41), (44, 87), (113, 129), (131, 137)]
+
+    self.assertEqual(actual_comments, expected_comments)
