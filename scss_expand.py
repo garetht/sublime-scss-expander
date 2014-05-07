@@ -10,10 +10,7 @@ class SCSSExpand():
 
   def coalesce_rule(self):
     self.comment_machine(self.startpos)
-    print self.startpos
-    print self.comment_blocks
     if self.check_block_comment(self.startpos):
-      print "happening"
       self.startpos = self.skip_comment(self.startpos)
     self.selector_machine(self.startpos)
     self.process_at_root()
