@@ -248,7 +248,6 @@ body#hello-world.program.rule:before {
     sse = string_scss_expand.StringSCSSExpand(102, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
-    print sse.comment_blocks
     self.assertEqual(actual_rule, expected_rule)
 
   def test_handle_block_comment_start(self):
