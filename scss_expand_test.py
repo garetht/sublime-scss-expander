@@ -1,12 +1,16 @@
-import unittest
-import string_scss_expand
+import unittest, sys
+
+if sys.version < '3':
+  from src.src_two.string_scss_expand import StringSCSSExpand
+else:
+  from src.src_three.string_scss_expand import StringSCSSExpand
 
 class TestScssExpand(unittest.TestCase):
 
   def test_one_rule(self):
     """Can handle one unnested rule."""
     string = ".hello{margin: 0}"
-    sse = string_scss_expand.StringSCSSExpand(10, string)
+    sse = StringSCSSExpand(10, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".hello"
 
@@ -15,7 +19,7 @@ class TestScssExpand(unittest.TestCase):
   def test_two_rules(self):
     """Can handle two unnested rules separated by a comma."""
     string = ".baz,.bang{padding:0}"
-    sse = string_scss_expand.StringSCSSExpand(14, string)
+    sse = StringSCSSExpand(14, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".baz, .bang"
 
@@ -28,7 +32,7 @@ body#hello-world.program.rule:before {
   text-align: left;
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(42, string)
+    sse = StringSCSSExpand(42, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = "body#hello-world.program.rule:before"
 
@@ -47,7 +51,7 @@ body#hello-world.program.rule:before {
   border: 0;
 }
 """
-    sse = string_scss_expand.StringSCSSExpand(99, string)
+    sse = StringSCSSExpand(99, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".actual-rule"
 
@@ -62,7 +66,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(37, string)
+    sse = StringSCSSExpand(37, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .bar"
 
@@ -71,7 +75,7 @@ body#hello-world.program.rule:before {
   def test_single_line_nested_rules(self):
     """Can handle a rule that is nested within another on a single line."""
     string = ".baz{.bang{.three{.four#end{z-index: 2}}}}"
-    sse = string_scss_expand.StringSCSSExpand(35, string)
+    sse = StringSCSSExpand(35, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".baz .bang .three .four#end"
 
@@ -80,7 +84,7 @@ body#hello-world.program.rule:before {
   def test_other_combinator_nested_rules(self):
     """Can handle a rule that is nested within another on a single line using other combinators."""
     string = ".baz{ + .bang{.three{> .four#end{z-index: 2}}}}"
-    sse = string_scss_expand.StringSCSSExpand(35, string)
+    sse = StringSCSSExpand(35, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".baz + .bang .three > .four#end"
 
@@ -96,7 +100,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(28, string)
+    sse = StringSCSSExpand(28, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .bar .baz"
 
@@ -111,7 +115,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(37, string)
+    sse = StringSCSSExpand(37, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz-width, .bar .baz-width"
 
@@ -126,7 +130,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(37, string)
+    sse = StringSCSSExpand(37, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
 
@@ -143,7 +147,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(63, string)
+    sse = StringSCSSExpand(63, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".ie8 .some-rule-here .other-rule-there"
 
@@ -158,7 +162,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(63, string)
+    sse = StringSCSSExpand(63, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".ie8 .some-rule-here .other-rule-there:hover"
 
@@ -173,7 +177,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(21, string)
+    sse = StringSCSSExpand(21, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foobar"
 
@@ -188,7 +192,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(49, string)
+    sse = StringSCSSExpand(49, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".first-rule:hover, .second-rule:hover"
 
@@ -205,7 +209,7 @@ body#hello-world.program.rule:before {
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(49, string)
+    sse = StringSCSSExpand(49, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .bang.baz, .foo .bim.baz, .bar .bang.baz, .bar .bim.baz"
 
@@ -226,7 +230,7 @@ body#hello-world.program.rule:before {
    */
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(88, string)
+    sse = StringSCSSExpand(88, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
 
@@ -245,7 +249,7 @@ body#hello-world.program.rule:before {
    */
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(102, string)
+    sse = StringSCSSExpand(102, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
     self.assertEqual(actual_rule, expected_rule)
@@ -261,7 +265,7 @@ body#hello-world.program.rule:before {
   */
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(48, string)
+    sse = StringSCSSExpand(48, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".baz"
 
@@ -279,7 +283,7 @@ body#hello-world.program.rule:before {
   // }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(77, string)
+    sse = StringSCSSExpand(77, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
 
@@ -293,7 +297,7 @@ body#hello-world.program.rule:before {
   .bar { width: 20px; }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(33, string)
+    sse = StringSCSSExpand(33, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .bar"
 
@@ -308,7 +312,7 @@ body#hello-world.program.rule:before {
   .bar { width: 20px; }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(40, string)
+    sse = StringSCSSExpand(40, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".baz .bar, .foo .bar"
 
@@ -322,13 +326,13 @@ body#hello-world.program.rule:before {
   .bar { width: #{$height} - 20px; }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(50, string)
+    sse = StringSCSSExpand(50, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .bar"
 
     self.assertEqual(actual_rule, expected_rule)
 
-    sse = string_scss_expand.StringSCSSExpand(62, string)
+    sse = StringSCSSExpand(62, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .bar"
 
@@ -342,7 +346,7 @@ body#hello-world.program.rule:before {
   baz: bang; //}
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(27, string)
+    sse = StringSCSSExpand(27, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo"
 
@@ -360,7 +364,7 @@ body#hello-world.program.rule:before {
   // }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(82, string)
+    sse = StringSCSSExpand(82, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz, .foo .bang, .bar .baz, .bar .bang"
 
@@ -378,7 +382,7 @@ body#hello-world.program.rule:before {
   // }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(63, string)
+    sse = StringSCSSExpand(63, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .baz"
 
@@ -393,7 +397,7 @@ $foo: 14;
 }
     """
 
-    sse = string_scss_expand.StringSCSSExpand(38, string)
+    sse = StringSCSSExpand(38, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".bar-#{$foo}-type"
 
@@ -412,7 +416,7 @@ $bim: 22;
 
     """
 
-    sse = string_scss_expand.StringSCSSExpand(67, string)
+    sse = StringSCSSExpand(67, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".baz .bar-#{$foo}-type-#{$bim}"
 
@@ -430,7 +434,7 @@ $bim: 22;
 }
 
     """
-    sse = string_scss_expand.StringSCSSExpand(63, string)
+    sse = StringSCSSExpand(63, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".bim .test-#{$thing}-bling"
 
@@ -445,7 +449,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(80, string)
+    sse = StringSCSSExpand(80, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = "@media only print, only screen and (max-device-width: 480px) .foo"
 
@@ -464,7 +468,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(84, string)
+    sse = StringSCSSExpand(84, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = "@media screen @supports something .bar"
 
@@ -483,7 +487,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(95, string)
+    sse = StringSCSSExpand(95, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".bar"
 
@@ -502,7 +506,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(95, string)
+    sse = StringSCSSExpand(95, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = ".foo .bar"
 
@@ -521,7 +525,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(100, string)
+    sse = StringSCSSExpand(100, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = "@supports something .bar"
 
@@ -540,7 +544,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(104, string)
+    sse = StringSCSSExpand(104, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = "@supports something .bar"
 
@@ -559,7 +563,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(104, string)
+    sse = StringSCSSExpand(104, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = "@media screen @supports something .bar"
 
@@ -578,7 +582,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(100, string)
+    sse = StringSCSSExpand(100, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = "@supports something .bar"
 
@@ -602,7 +606,7 @@ $bim: 22;
   }
 }
     """
-    sse = string_scss_expand.StringSCSSExpand(138, string)
+    sse = StringSCSSExpand(138, string)
     actual_rule = sse.coalesce_rule()
     expected_rule = "@media screen @supports something .baz"
 
@@ -612,7 +616,7 @@ $bim: 22;
     """Test pure functionality of comment machine with a one-line comment"""
     string = "//2345678\n"
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(9)
     actual_comments = sse.comment_blocks
     expected_comments = [(0, 9)]
@@ -631,7 +635,7 @@ $bim: 22;
 }
     """
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(64)
     actual_comments = sse.comment_blocks
     expected_comments = [(25, 46)]
@@ -650,7 +654,7 @@ $bim: 22;
 }
     """
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(64)
     actual_comments = sse.comment_blocks
     expected_comments = [(25, 48)]
@@ -670,7 +674,7 @@ $bim: 22;
 }
     """
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(80)
     actual_comments = sse.comment_blocks
     expected_comments = [(1, 17), (42, 65)]
@@ -681,7 +685,7 @@ $bim: 22;
     """Test functionality of comment machine with a block comment"""
     string = "/*/345678*/ "
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(11)
     actual_comments = sse.comment_blocks
     expected_comments = [(0, 10)]
@@ -702,7 +706,7 @@ Things in here.
 }
     """
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(63)
     actual_comments = sse.comment_blocks
     expected_comments = [(26, 47)]
@@ -723,7 +727,7 @@ Things in here. // like this
 }
     """
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(80)
     actual_comments = sse.comment_blocks
     expected_comments = [(26, 60)]
@@ -745,7 +749,7 @@ Things in here. // like this
 }
     """
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(90)
     actual_comments = sse.comment_blocks
     expected_comments = [(26, 69)]
@@ -770,7 +774,7 @@ Things in here. // like this
 // end
     """
 
-    sse = string_scss_expand.StringSCSSExpand(0, string)
+    sse = StringSCSSExpand(0, string)
     sse.comment_machine(138)
     actual_comments = sse.comment_blocks
     expected_comments = [(26, 41), (44, 87), (113, 129), (131, 137)]
