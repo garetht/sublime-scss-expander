@@ -3,7 +3,7 @@ import unittest, sys
 if sys.version < '3':
   from src.src_two.string_scss_expand import StringSCSSExpand
 else:
-  from src.src_three.string_scss_expand import StringSCSSExpand
+  from .src.src_three.string_scss_expand import StringSCSSExpand
 
 class TestScssExpand(unittest.TestCase):
 

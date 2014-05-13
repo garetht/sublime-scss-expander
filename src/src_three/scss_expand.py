@@ -1,4 +1,5 @@
 import re
+from functools import reduce
 
 class SCSSExpand():
   def __init__(self, startpos, get_char_fn, separator = ' '):
@@ -15,8 +16,8 @@ class SCSSExpand():
     self.selector_machine(self.startpos)
     self.process_at_root()
 
-    selector_array = filter(lambda x : not re.search('@(for|each|while|if|else)', x), self.selectors)
-    selector_array = map(self.process_selector, selector_array)
+    selector_array = [x for x in self.selectors if not re.search('@(for|each|while|if|else)', x)]
+    selector_array = list(map(self.process_selector, selector_array))
 
     ### Past this point are mostly differences in formatting
     # If loop directive information must be retained,
@@ -192,7 +193,7 @@ class SCSSExpand():
       # keep directives but not those listed. without rule is in this case
       filter_func = lambda x: re.match('@', x) and not re.match(directive_re, x)
 
-    allowed_directives = filter(filter_func, selectors[:at_root_index])
+    allowed_directives = list(filter(filter_func, selectors[:at_root_index]))
     selectors[at_root_index] = re.sub(AT_ROOT_RE, '', selectors[at_root_index])
     self.selectors = allowed_directives + selectors[at_root_index:]
 
