@@ -4,7 +4,7 @@ import re, sys, os
 if sys.version < '3':
   from src.src_two.scss_expand import SCSSExpand
 else:
-  from src.src_three.scss_expand import SCSSExpand
+  from .src.src_three.scss_expand import SCSSExpand
 
 class ScssexpanderCommand(sublime_plugin.TextCommand):
   def run(self, edit):
