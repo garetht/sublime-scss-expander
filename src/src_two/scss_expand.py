@@ -129,9 +129,10 @@ class SCSSExpand():
         else:
           break
 
-      selector += char
-      selectorposition -= 1
-      char = self.get_char_fn(selectorposition)
+      if selectorposition >= 0:
+        selector += char
+        selectorposition -= 1
+        char = self.get_char_fn(selectorposition)
 
     if len(selector) > 0:
       selector = self.strip_whitespace(selector)

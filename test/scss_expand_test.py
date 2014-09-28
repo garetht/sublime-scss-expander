@@ -757,6 +757,52 @@ Things in here. // like this
 
     self.assertEqual(actual_comments, expected_comments)
 
+  def test_comment_machine_multistar_comments(self):
+    """Test functionality of comment machine with multiple block stars."""
+    string = """/**
+  * Copyright (C) 2014 User
+  * @file _navigation.scss
+  *
+  * changelog
+  * 2014-09-12[14:40:07]
+  *
+  * @author user
+  * @version 1.0-rc
+  * @link http://semver.org/
+  */
+
+.some-rule {
+
+}
+    """
+    sse = StringSCSSExpand(0, string)
+    sse.comment_machine(193)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(0, 175)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
+  def test_underlined_comment_block(self):
+    """Test functionality of comment machine with underlined comment block"""
+    string = """
+//
+// Pagination (multiple pages)
+// --------------------------------------------------
+.pagination {
+  display: inline-block;
+  padding-left: 0;
+  margin: $line-height-computed 0;
+  border-radius: $border-radius-base;
+}
+"""
+
+    sse = StringSCSSExpand(0, string)
+    sse.comment_machine(220)
+    actual_comments = sse.comment_blocks
+    expected_comments = [(1, 3), (4, 34), (35, 88)]
+
+    self.assertEqual(actual_comments, expected_comments)
+
   def test_comment_machine_mixed_comments(self):
     """Test functionality of comment machine with multiple comment block starters"""
     string = """
@@ -781,3 +827,42 @@ Things in here. // like this
     expected_comments = [(26, 41), (44, 87), (113, 129), (131, 137)]
 
     self.assertEqual(actual_comments, expected_comments)
+
+  def test_scss_beginning_with_comment(self):
+    """Test that a stylesheet beginning with a comment returns a non-empty result"""
+    string = """//
+.test {
+  .place {
+
+  }
+}
+    """
+    sse = StringSCSSExpand(22, string)
+    actual_rule = sse.coalesce_rule()
+    expected_rule = ".test .place"
+
+    self.assertEqual(actual_rule, expected_rule)
+
+  def test_scss_beginning_with_block_comment(self):
+      """Test that the correct rule is generated for SCSS beginning with a line comment"""
+      string = """/**
+    * Copyright (C) 2014 User
+    * @file _navigation.scss
+    *
+    * changelog
+    * 2014-09-12[14:40:07]
+    *
+    * @author user
+    * @version 1.0-rc
+    * @link http://semver.org/
+    */
+
+  .some-rule {
+
+  }
+      """
+      sse = StringSCSSExpand(213, string, "\n")
+      actual_rule = sse.coalesce_rule()
+      expected_rule = ".some-rule"
+
+      self.assertEqual(actual_rule, expected_rule)
