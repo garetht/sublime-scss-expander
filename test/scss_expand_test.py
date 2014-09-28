@@ -861,7 +861,7 @@ Things in here. // like this
 
   }
       """
-      sse = StringSCSSExpand(213, string, "\n")
+      sse = StringSCSSExpand(213, string)
       actual_rule = sse.coalesce_rule()
       expected_rule = ".some-rule"
 
